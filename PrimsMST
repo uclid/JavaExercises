@@ -1,0 +1,145 @@
+/**
+ * Created by user on 12/8/2014.
+ * Java implementation of the Prim's algorithm using
+ * an example graph. The program will display the MST
+ * of the example graph at the end along with the
+ * total cost of the minimum spanning tree.
+ */
+public class PrimsMST {
+
+    private int adjMat[][]; //adjacency matrix for the graph
+    private int num; //number of vertices
+
+    private boolean unused[]; //nodes not traversed yet
+    private boolean used[]; //nodes traversed
+    private int current[]; // the queue to hold current value of weights
+    private int MST[]; //MST updated until the current level
+
+    public static final int I = 99; //a large value representing infinite distance
+
+    /**Constructor for the PrimsMST object. All initializations about the
+     * size of the variables are done inside it**/
+    public PrimsMST(int num){
+        this.num = num;
+        unused = new boolean[num + 1];
+        used = new boolean[num + 1];
+        adjMat = new int[num + 1][num + 1];
+        current = new int[num + 1];
+        MST = new int[num + 1];
+    }
+
+    /**Method to count the unused vertices or vertices that have
+    * not been traversed**/
+    public int countUnused(){
+        int count = 0;
+        for (int index = 0; index < unused.length; index++){
+            if (unused[index]){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**Method to implement the Prim's algorithm on the graph of
+     * our input. Takes the adjacency matrix as an argument**/
+    public void primsAlgorithm(int adjMat[][]){
+        int curVertex;
+        for (int src = 1; src <= num; src++){
+            for (int dest = 1; dest <= num; dest++){
+                //update the adjacent matrix of this opject with weights
+                this.adjMat[src][dest] = adjMat[src][dest];
+            }
+        }
+
+        for (int index = 1; index <= num; index++){
+            //set all weights to infinity
+            current[index] = I;
+        }
+        current[1] = 0;//set weight of the first vertex to 0
+        unused[1] = true;//mark it as unused
+        MST[1] = 1;//add first vertex to MST
+
+        while (countUnused() != 0){
+            curVertex = findMin();//get the minimum vertex from the queue
+            //mark that vertex as used
+            unused[curVertex] = false;
+            used[curVertex] = true;
+            //find the adjacent vertices
+            findAdj(curVertex);
+        }
+    }
+
+    /**Finds the vertex with the minimum value of distance and
+     * returns the vertex**/
+    private int findMin(){
+        int min = Integer.MAX_VALUE;//maximum value that can be held by an integer
+        int node = 0;
+        for (int vertex = 1; vertex <= num; vertex++){
+            if (unused[vertex] == true && current[vertex] < min){
+                node = vertex;
+                min = current[vertex];
+            }
+        }
+        return node;
+    }
+
+    /**Finds the adjacent vertices of the current vertex by using
+     * the adjacency matrix**/
+    public void findAdj(int curVertex){
+        //trace all vertices for adjacency
+        for (int adjVertex = 1; adjVertex <= num; adjVertex++){
+            if (used[adjVertex] == false){//check vertices that are not used
+                if (adjMat[curVertex][adjVertex] != I){//check valid edges
+                    //if the weight is less, update the weight in the queue
+                    if (adjMat[curVertex][adjVertex] < current[adjVertex]){
+                        current[adjVertex] = adjMat[curVertex][adjVertex];
+                        MST[adjVertex] = curVertex;//add current vertex in the MST
+                    }
+                    unused[adjVertex] = true;
+                }
+            }
+        }
+    }
+
+    /**Displays the final resuly i.e. the edges of the MST
+     * ans the total cost of MST**/
+    public void dispEdges(){
+        int cost=0;//cost intially zero
+        System.out.println("Listing the edges in the Minimum Spanning Tree....");
+        System.out.println("Vertices are in parenthesis and the weights are in between.");
+        //join each vertex stored in the MST to their destination vertices
+        for (int vertex = 2; vertex <= num; vertex++){
+            System.out.println("(" + MST[vertex] + ")--" + adjMat[MST[vertex]][vertex] +"--("+ vertex+ ")");
+            cost+=adjMat[MST[vertex]][vertex];//add the costs of each edge in the MST
+        }
+        System.out.println("Total Cost of MST is: " + cost);
+    }
+
+    public static void main(String args[]){
+        /*adjacency matrix of the graph provided in the
+        *assignment question. The rows and columns represent
+        * the vertices and the values in the matrices represent
+        * the weights between the edges. The values I signify
+        * that the values are infinity i.e. there are no edges
+        * between those vertices
+         */
+        int adj_mat[][] = new int[][]{
+               //x 1 2 3 4 5 6 7 8
+                {I,I,I,I,I,I,I,I,I},//x
+                {I,I,5,4,I,I,I,I,I},//1
+                {I,5,I,2,3,I,I,I,I},//2
+                {I,4,2,I,I,4,I,I,I},//3
+                {I,I,3,I,I,2,I,6,I},//4
+                {I,I,I,4,2,I,1,I,I},//5
+                {I,I,I,I,I,1,I,8,I},//6
+                {I,I,I,I,6,I,8,I,2},//7
+                {I,I,I,I,I,I,I,2,I} //8
+        };
+        int num = 8; //the number of vertices in our example
+
+        PrimsMST prims = new PrimsMST(num);//create an object representing the graph
+        prims.primsAlgorithm(adj_mat);//trace prim's algorithm for the graph
+        prims.dispEdges();//display the edges of MST and the total cost
+
+    }
+}
